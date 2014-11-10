@@ -20,8 +20,10 @@ for i in range(ord('b'), ord('b') + int(sys.argv[1])):
     x = chr(i)
     print 'doing', x
     path = "/big/%s" % (x,)
+    hostPort = 4000 + i
+    print 'allocating hostPort', hostPort
     os.system("rm -rf %s/*" % (path,))
     os.system("docker run -v %s:/var/lib/mysql dockerfile/percona mysql_install_db" % (path,))
-    os.system("docker run -d -v %s:/var/lib/mysql dockerfile/percona" % (path,))
+    os.system("docker run -d -v %s:/var/lib/mysql --publish=%d:3306 dockerfile/percona" % (path, hostPort))
 
 
