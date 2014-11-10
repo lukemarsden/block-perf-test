@@ -7,6 +7,8 @@ Usage: run.py <number-of-containers>
 
 import os, sys
 
+print 'disabling security'
+os.system("setenforce 0")
 # kill all containers
 print 'killing containers...'
 os.system("docker rm -f $(docker ps -a -q)")
