@@ -23,7 +23,7 @@ for i in range(ord('b'), ord('b') + int(sys.argv[1])):
     os.system("rm -rf %s/*" % (path,))
     cmd = (("""docker run -v %s:/var/lib/mysql dockerfile/percona sh -c """
             """'mysql_install_db && mysqld_safe & mysqladmin --silent --wait=30 ping || exit 1 &&"""
-            """ mysql -e "GRANT ALL PRIVILEGES ON *.* TO \"root\"@\"%%\" WITH GRANT OPTION;"'""") % (path,))
+            """ mysql -e "GRANT ALL PRIVILEGES ON *.* TO \\\"root\\\"@\\\"%%\\\" WITH GRANT OPTION;"'""") % (path,))
     print 'running', cmd
     os.system(cmd)
     os.system("docker run -d -v %s:/var/lib/mysql --publish=%d:3306 --name=mysql-%d-%s dockerfile/percona" % (path, hostPort, i, x))
