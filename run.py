@@ -13,8 +13,6 @@ os.system("setenforce 0")
 print 'killing containers...'
 os.system("docker rm -f $(docker ps -a -q)")
 
-# ord('z')
-
 print 'starting up', sys.argv[1], 'of them...'
 for i in range(ord('b'), ord('b') + int(sys.argv[1])):
     x = chr(i)
@@ -23,7 +21,5 @@ for i in range(ord('b'), ord('b') + int(sys.argv[1])):
     hostPort = 4000 + i
     print 'allocating hostPort', hostPort
     os.system("rm -rf %s/*" % (path,))
-    os.system("docker run -v %s:/var/lib/mysql dockerfile/percona mysql_install_db" % (path,))
+    #os.system("docker run -v %s:/var/lib/mysql dockerfile/percona mysql_install_db" % (path,))
     os.system("docker run -d -v %s:/var/lib/mysql --publish=%d:3306 --name=mysql-%d-%s dockerfile/percona" % (path, hostPort, i, x))
-
-
