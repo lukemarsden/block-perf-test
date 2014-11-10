@@ -1,14 +1,19 @@
 """
 Starts mysql containers on a set of volumes: /big/[b-z], wiping them out first,
 and running mysql_install_db.
+
+Usage: run.py <number-of-containers>
 """
 
-import os
+import os, sys
 
 # kill all containers
 os.system("docker rm -f $(docker ps -a -q)")
 
-for x in range(ord('b'), ord('z')):
+# ord('z')
+
+for i in range(ord('b'), ord('b') + int(sys.argv[1])):
+    x = chr(i)
     print 'doing', x
     path = "/big/%s" % (x,)
     os.system("rm -rf %s/*" % (path,))
