@@ -61,25 +61,29 @@ def printIt(result):
 
 WAREHOUSES = 2
 
+def run(cmd, args, **kw):
+    print "running", cmd, args
+    return utils.getProcessOutput(cmd, args, errortoo=True)
+
 def inject():
     dlist = []
     for i in concurrent:
         hostPort = 4000 + i
         print 'creating database for', hostPort
-        d = task.deferLater(reactor, 10, utils.getProcessOutput, "mysqladmin",
-            ("-h localhost -P %d --protocol=tcp --silent --wait=30 ping" % (hostPort,)).split(" "), errortoo=True)
+        d = task.deferLater(reactor, 10, run, "mysqladmin",
+            ("-h localhost -P %d --protocol=tcp --silent --wait=30 ping" % (hostPort,)).split(" "))
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput("mysqladmin",
-            ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" "), errortoo=True))
+        d.addCallback(lambda ignored: run("mysqladmin",
+            ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" ")))
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput("bash", ["-c",
-            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hostPort,)], errortoo=True))
+        d.addCallback(lambda ignored: run("bash", ["-c",
+            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hostPort,)]))
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput("bash", ["-c",
-            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)], errortoo=True))
+        d.addCallback(lambda ignored: run("bash", ["-c",
+            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)]))
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput('/root/tpcc-mysql/tpcc_load',
-            ["127.0.0.1:%d" % (hostPort,), "tpcc1000", "root", "", "%d" % (WAREHOUSES,)], errortoo=True))
+        d.addCallback(lambda ignored: run('/root/tpcc-mysql/tpcc_load',
+            ["127.0.0.1:%d" % (hostPort,), "tpcc1000", "root", "", "%d" % (WAREHOUSES,)]))
         d.addCallback(printIt)
         d.addErrback(log.err, 'failed while creating database %d' % (i,))
         dlist.append(d)
@@ -97,10 +101,10 @@ def benchmark():
     dlist = []
     for i in concurrent:
         hostPort = 4000 + i
-        d = utils.getProcessOutput("bash", ["-c",
+        d = run("bash", ["-c",
             ('/root/tpcc-mysql/tpcc_start -h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l120'
              ' > /root/results-%d.log')
-            % (hostPort, WAREHOUSES, hostPort)], errortoo=True)
+            % (hostPort, WAREHOUSES, hostPort)])
         d.addCallback(writeIt, hostPort=hostPort)
         dlist.append(d)
     return defer.gatherResults(dlist)
