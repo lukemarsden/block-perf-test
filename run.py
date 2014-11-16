@@ -8,7 +8,7 @@ Usage: run.py <number-of-containers>
 """
 
 import os, sys
-from twisted.internet import reactor, defer, utils
+from twisted.internet import reactor, defer, utils, task
 from twisted.python import log
 
 print 'disabling security'
@@ -66,8 +66,8 @@ def inject():
     for i in concurrent:
         hostPort = 4000 + i
         print 'creating database for', hostPort
-        d = utils.getProcessOutput("mysqladmin",
-            ("-h localhost -P %d --protocol=tcp --silent --wait=30 ping" % (hostPort,)).split(" "), errortoo=True)
+        d = task.deferLater(reactor, 10, utils.getProcessOutput("mysqladmin",
+            ("-h localhost -P %d --protocol=tcp --silent --wait=30 ping" % (hostPort,)).split(" "), errortoo=True))
         d.addCallback(printIt)
         d.addCallback(lambda ignored: utils.getProcessOutput("mysqladmin",
             ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" "), errortoo=True))
