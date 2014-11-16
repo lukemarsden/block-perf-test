@@ -69,6 +69,7 @@ def inject():
     dlist = []
     for i in concurrent:
         hostPort = 4000 + i
+        # XXX This is getting bound too late.
         print 'creating database for', hostPort
         d = task.deferLater(reactor, 10, run, "mysqladmin",
             ("-h localhost -P %d --protocol=tcp --silent --wait=30 ping" % (hostPort,)).split(" "))
