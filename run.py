@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 """
 Starts mysql containers on a set of volumes: /big/[b-z], wiping them out first,
 and running mysql_install_db.
