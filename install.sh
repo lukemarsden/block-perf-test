@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+set -e
+
 cd ~/
 
 yum install -y bzr
