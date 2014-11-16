@@ -41,28 +41,6 @@ for i in range(ord('b'), ord('b') + int(sys.argv[1])):
     os.system(cmd)
     os.system("docker run -d -v %s:/var/lib/mysql -v /root/block-perf-test/conf:/etc/mysql --publish=%d:3306 --name=mysql-%d-%s dockerfile/percona" % (path, hostPort, i, x))
 
-"""
-2. Load data
-   * create database
-     mysqladmin create tpcc1000
-   * create tables
-     mysql tpcc1000 < create_table.sql
-   * create indexes and FK ( this step can be done after loading data)
-     mysql tpcc1000 < add_fkey_idx.sql
-   * populate data
-     - simple step
-       tpcc_load 127.0.0.1:33000 tpcc1000 root "" 1000
-                 |hostname:port| |dbname| |user| |password| |WAREHOUSES|
-       ref. tpcc_load --help for all options
-     - load data in parallel
-       check load.sh script
-
-3. start benchmark
-   * ./tpcc_start -h127.0.0.1 -P33000 -dtpcc1000 -uroot -w1000 -c32 -r10 -l10800
-                  |hostname| |port| |dbname| |user| |WAREHOUSES| |CONNECTIONS| |WARMUP TIME| |BENCHMARK TIME|
-   * ref. tpcc_start --help for all options
-"""
-
 def printIt(result):
     print result
 
@@ -74,7 +52,6 @@ def inject():
     dlist = []
     for i in concurrent:
         hostPort = 4000 + i
-        # XXX This is getting bound too late.
         print 'creating database for', hostPort
         d = task.deferLater(reactor, 10, run, "mysqladmin",
             ("-h localhost -P %d --protocol=tcp --silent --wait=30 ping" % (hostPort,)).split(" "))
@@ -94,7 +71,6 @@ def inject():
         d.addErrback(log.err, 'failed while creating database %d' % (i,))
         dlist.append(d)
     return defer.gatherResults(dlist)
-
 
 def writeIt(result, hostPort):
     print result
