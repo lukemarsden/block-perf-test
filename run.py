@@ -70,12 +70,12 @@ def inject():
                 ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" "), errortoo=True)
         d.addCallback(printIt)
         d.addCallback(lambda ignored: utils.getProcessOutput("mysql",
-            ("-h localhost -P %d --protocol=tcp tpcc1000 < ~/tpcc-mysql/create_table.sql" % (hostPort,)).split(" "), errortoo=True))
+            ("-h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hostPort,)).split(" "), errortoo=True))
         d.addCallback(printIt)
         d.addCallback(lambda ignored: utils.getProcessOutput("mysql",
-            ("-h localhost -P %d --protocol=tcp tpcc1000 < ~/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)).split(" "), errortoo=True))
+            ("-h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)).split(" "), errortoo=True))
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput('~/tpcc-mysql/tpcc_load',
+        d.addCallback(lambda ignored: utils.getProcessOutput('/root/tpcc-mysql/tpcc_load',
             ('127.0.0.1:%d tpcc1000 root "" %d' % (hostPort, WAREHOUSES)).split(" "), errortoo=True))
         d.addCallback(printIt)
         d.addErrback(log.err, 'failed while creating database %d' % (i,))
@@ -85,7 +85,7 @@ def inject():
 def benchmark():
     dlist = []
     for i in concurrent:
-        d = utils.getProcessOutput('~/tpcc-mysql/tpcc_start',
+        d = utils.getProcessOutput('/root/tpcc-mysql/tpcc_start',
                 ('-h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l60' % (hostPort, WAREHOUSES)).split(" "), errortoo=True)
         d.addCallback(printIt)
         dlist.add(d)
