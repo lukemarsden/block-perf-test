@@ -66,13 +66,17 @@ def inject():
     for i in concurrent:
         hostPort = 4000 + i
         print 'creating database for', hostPort
-        d = utils.getProcessOutput("mysqladmin -h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,), errortoo=True)
+        d = utils.getProcessOutput("mysqladmin",
+                ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" "), errortoo=True)
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput("mysql -h localhost -P %d --protocol=tcp tpcc1000 < ~/tpcc-mysql/create_table.sql" % (hostPort,), errortoo=True))
+        d.addCallback(lambda ignored: utils.getProcessOutput("mysql",
+            ("-h localhost -P %d --protocol=tcp tpcc1000 < ~/tpcc-mysql/create_table.sql" % (hostPort,)).split(" "), errortoo=True))
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput("mysql -h localhost -P %d --protocol=tcp tpcc1000 < ~/tpcc-mysql/add_fkey_idx.sql" % (hostPort,), errortoo=True))
+        d.addCallback(lambda ignored: utils.getProcessOutput("mysql",
+            ("-h localhost -P %d --protocol=tcp tpcc1000 < ~/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)).split(" "), errortoo=True))
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput('~/tpcc-mysql/tpcc_load 127.0.0.1:%d tpcc1000 root "" %d' % (hostPort, WAREHOUSES), errortoo=True))
+        d.addCallback(lambda ignored: utils.getProcessOutput('~/tpcc-mysql/tpcc_load',
+            ('127.0.0.1:%d tpcc1000 root "" %d' % (hostPort, WAREHOUSES)).split(" "), errortoo=True))
         d.addCallback(printIt)
         d.addErrback(log.err, 'failed while creating database %d' % (i,))
         dlist.add(d)
@@ -81,7 +85,8 @@ def inject():
 def benchmark():
     dlist = []
     for i in concurrent:
-        d = utils.getProcessOutput('~/tpcc-mysql/tpcc_start -h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l60' % (hostPort, WAREHOUSES), errortoo=True)
+        d = utils.getProcessOutput('~/tpcc-mysql/tpcc_start',
+                ('-h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l60' % (hostPort, WAREHOUSES)).split(" "), errortoo=True)
         d.addCallback(printIt)
         dlist.add(d)
     return defer.gatherResults(dlist)
