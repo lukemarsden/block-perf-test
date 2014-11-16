@@ -74,17 +74,17 @@ def inject():
         d = task.deferLater(reactor, 10, run, "mysqladmin",
             ("-h localhost -P %d --protocol=tcp --silent --wait=30 ping" % (hostPort,)).split(" "))
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: run("mysqladmin",
-            ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" ")))
+        d.addCallback(lambda ignored, hp: run("mysqladmin",
+            ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hp,)).split(" ")), hp=hostPort)
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: run("bash", ["-c",
-            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hostPort,)]))
+        d.addCallback(lambda ignored, hp: run("bash", ["-c",
+            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hp,)]), hp=hostPort)
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: run("bash", ["-c",
-            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)]))
+        d.addCallback(lambda ignored, hp: run("bash", ["-c",
+            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hp,)]), hp=hostPort)
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: run('/root/tpcc-mysql/tpcc_load',
-            ["127.0.0.1:%d" % (hostPort,), "tpcc1000", "root", "", "%d" % (WAREHOUSES,)]))
+        d.addCallback(lambda ignored, hp: run('/root/tpcc-mysql/tpcc_load',
+            ["127.0.0.1:%d" % (hp,), "tpcc1000", "root", "", "%d" % (WAREHOUSES,)]), hp=hostPort)
         d.addCallback(printIt)
         d.addErrback(log.err, 'failed while creating database %d' % (i,))
         dlist.append(d)
