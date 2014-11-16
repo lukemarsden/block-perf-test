@@ -67,16 +67,16 @@ def inject():
         hostPort = 4000 + i
         print 'creating database for', hostPort
         d = utils.getProcessOutput("mysqladmin",
-                ("-h localhost -P %d --protocol=tcp --silent --wait=30 ping" % (hostPort,)).split(" "), errortoo=True)
+            ("-h localhost -P %d --protocol=tcp --silent --wait=30 ping" % (hostPort,)).split(" "), errortoo=True)
         d.addCallback(printIt)
         d = utils.getProcessOutput("mysqladmin",
-                ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" "), errortoo=True)
+            ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" "), errortoo=True)
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput("mysql",
-            ("-h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hostPort,)).split(" "), errortoo=True))
+        d.addCallback(lambda ignored: utils.getProcessOutput("sh", ["-c",
+            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hostPort,)], errortoo=True))
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput("mysql",
-            ("-h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)).split(" "), errortoo=True))
+        d.addCallback(lambda ignored: utils.getProcessOutput("sh", ["-c",
+            "-h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)], errortoo=True))
         d.addCallback(printIt)
         d.addCallback(lambda ignored: utils.getProcessOutput('/root/tpcc-mysql/tpcc_load',
             ('127.0.0.1:%d tpcc1000 root "" %d' % (hostPort, WAREHOUSES)).split(" "), errortoo=True))
