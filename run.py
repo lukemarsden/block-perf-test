@@ -32,7 +32,7 @@ for i in range(ord('b'), ord('b') + int(sys.argv[1])):
             """ mysql -e "GRANT ALL PRIVILEGES ON *.* TO \\\"root\\\"@\\\"%%\\\" WITH GRANT OPTION;"'""") % (path,))
     print 'running', cmd
     os.system(cmd)
-    os.system("docker run -d -v %s:/var/lib/mysql --publish=%d:3306 --name=mysql-%d-%s dockerfile/percona" % (path, hostPort, i, x))
+    os.system("docker run -d -v %s:/var/lib/mysql /root/block-perf-test/conf:/etc/mysql --publish=%d:3306 --name=mysql-%d-%s dockerfile/percona" % (path, hostPort, i, x))
 
 """
 2. Load data
@@ -88,6 +88,7 @@ def inject():
 def benchmark():
     dlist = []
     for i in concurrent:
+        hostPort = 4000 + i
         d = utils.getProcessOutput('/root/tpcc-mysql/tpcc_start',
                 ('-h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l60' % (hostPort, WAREHOUSES)).split(" "), errortoo=True)
         d.addCallback(printIt)
