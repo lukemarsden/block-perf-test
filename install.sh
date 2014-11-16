@@ -17,6 +17,7 @@ yum install -y Percona-Server-devel-56.x86_64
 
 yum group install -y "Development Tools"
 yum install -y openssl-devel
+# TODO apply https://bugs.launchpad.net/perconatools/+bug/1084839
 cd tpcc-mysql/src; make
 
 yum install -y wget

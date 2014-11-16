@@ -89,8 +89,10 @@ def benchmark():
     dlist = []
     for i in concurrent:
         hostPort = 4000 + i
-        d = utils.getProcessOutput('/root/tpcc-mysql/tpcc_start',
-                ('-h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l60' % (hostPort, WAREHOUSES)).split(" "), errortoo=True)
+        d = utils.getProcessOutput("bash", ["-c",
+            ('/root/tpcc-mysql/tpcc_start -h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l60'
+             ' > ~/results-%d.log')
+            % (hostPort, WAREHOUSES, hostPort)], errortoo=True)
         d.addCallback(printIt)
         dlist.append(d)
     return defer.gatherResults(dlist)
