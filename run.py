@@ -69,8 +69,8 @@ def inject():
         d = utils.getProcessOutput("mysqladmin",
             ("-h localhost -P %d --protocol=tcp --silent --wait=30 ping" % (hostPort,)).split(" "), errortoo=True)
         d.addCallback(printIt)
-        d = utils.getProcessOutput("mysqladmin",
-            ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" "), errortoo=True)
+        d.addCallback(lambda ignored: utils.getProcessOutput("mysqladmin",
+            ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" "), errortoo=True))
         d.addCallback(printIt)
         d.addCallback(lambda ignored: utils.getProcessOutput("bash", ["-c",
             "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hostPort,)], errortoo=True))
