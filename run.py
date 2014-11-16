@@ -76,7 +76,7 @@ def inject():
             "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hostPort,)], errortoo=True))
         d.addCallback(printIt)
         d.addCallback(lambda ignored: utils.getProcessOutput("bash", ["-c",
-            "-h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)], errortoo=True))
+            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)], errortoo=True))
         d.addCallback(printIt)
         d.addCallback(lambda ignored: utils.getProcessOutput('/root/tpcc-mysql/tpcc_load',
             ('127.0.0.1:%d tpcc1000 root "" %d' % (hostPort, WAREHOUSES)).split(" "), errortoo=True))
