@@ -1,15 +1,22 @@
 #!/usr/bin/python
 
-"""
+usage = """
 Starts mysql containers on a set of volumes: /big/[b-z], wiping them out first,
 and running mysql_install_db.
 
-Usage: run.py <number-of-containers>
+Usage: run.py <number-of-containers> <warehouses-per-benchmark> <test-time-in-seconds>
 """
 
 import os, sys
 from twisted.internet import reactor, defer, utils, task
 from twisted.python import log
+
+if len(sys.argv) < 4:
+    print usage
+    raise SystemExit()
+
+WAREHOUSES = int(sys.argv[2]) # 2
+TEST_TIME = int(sys.argv[3]) # 120
 
 print 'disabling security'
 os.system("setenforce 0")
@@ -58,8 +65,6 @@ for i in range(ord('b'), ord('b') + int(sys.argv[1])):
 
 def printIt(result):
     print result
-
-WAREHOUSES = 2
 
 def run(cmd, args, **kw):
     print "running", cmd, args
