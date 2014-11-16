@@ -15,6 +15,7 @@ if len(sys.argv) < 4:
     print usage
     raise SystemExit()
 
+CONCURRENCY = int(sys.argv[1])
 WAREHOUSES = int(sys.argv[2]) # 2
 TEST_TIME = int(sys.argv[3]) # 120
 
@@ -25,8 +26,8 @@ print 'killing containers...'
 os.system("docker rm -f $(docker ps -a -q)")
 
 concurrent = []
-print 'starting up', sys.argv[1], 'of them...'
-for i in range(ord('b'), ord('b') + int(sys.argv[1])):
+print 'starting up', CONCURRENCY, 'of them...'
+for i in range(ord('b'), ord('b') + CONCURRENCY):
     concurrent.append(i)
     x = chr(i)
     print 'doing', x
@@ -84,9 +85,10 @@ def benchmark():
     for i in concurrent:
         hostPort = 4000 + i
         d = run("bash", ["-c",
-            ('/root/tpcc-mysql/tpcc_start -h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l120'
-             ' > /root/results-%d.log')
-            % (hostPort, WAREHOUSES, hostPort)])
+            ('/root/tpcc-mysql/tpcc_start -h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l%d'
+             ' > /root/results-%d-%d-%d-%d.log')
+            % (hostPort, WAREHOUSES, TEST_TIME,
+               CONCURRENCY, WAREHOUSES, TEST_TIME, hostPort)])
         d.addCallback(writeIt, hostPort=hostPort)
         dlist.append(d)
     return defer.gatherResults(dlist)
