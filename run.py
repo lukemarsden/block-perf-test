@@ -9,6 +9,7 @@ Usage: run.py <number-of-containers>
 
 import os, sys
 from twisted.internet import reactor, defer, utils
+from twisted.python import log
 
 print 'disabling security'
 os.system("setenforce 0")
@@ -55,23 +56,42 @@ for i in range(ord('b'), ord('b') + int(sys.argv[1])):
    * ref. tpcc_start --help for all options
 """
 
+def printIt(result):
+    print result
+
+WAREHOUSES = 2
+
 def inject():
     dlist = []
     for i in concurrent:
-        d = utils.getProcessValue("")
+        hostPort = 4000 + i
+        print 'creating database for', hostPort
+        d = utils.getProcessOutput("mysqladmin -h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,), errortoo=True)
+        d.addCallback(printIt)
+        d.addCallback(lambda ignored: utils.getProcessOutput("mysql -h localhost -P %d --protocol=tcp tpcc1000 < ~/tpcc-mysql/create_table.sql" % (hostPort,), errortoo=True))
+        d.addCallback(printIt)
+        d.addCallback(lambda ignored: utils.getProcessOutput("mysql -h localhost -P %d --protocol=tcp tpcc1000 < ~/tpcc-mysql/add_fkey_idx.sql" % (hostPort,), errortoo=True))
+        d.addCallback(printIt)
+        d.addCallback(lambda ignored: utils.getProcessOutput('~/tpcc-mysql/tpcc_load 127.0.0.1:%d tpcc1000 root "" %d' % (hostPort, WAREHOUSES), errortoo=True))
+        d.addCallback(printIt)
+        d.addErrback(log.err, 'failed while creating database %d' % (i,))
         dlist.add(d)
-    return defer.DeferredList(dlist)
+    return defer.gatherResults(dlist)
 
 def benchmark():
     dlist = []
     for i in concurrent:
-        d = defer.Deferred()
+        d = utils.getProcessOutput('~/tpcc-mysql/tpcc_start -h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l60' % (hostPort, WAREHOUSES), errortoo=True)
+        d.addCallback(printIt)
         dlist.add(d)
-    return defer.DeferredList(dlist)
+    return defer.gatherResults(dlist)
 
 def main():
     d = inject()
+    d.addCallback(printIt)
     d.addCallback(lambda ignored: benchmark())
+    d.addCallback(printIt)
+    d.addErrback(log.err, 'failed while running entire benchmark')
     return d
 
 reactor.callWhenRunning(main)
