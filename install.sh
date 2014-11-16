@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+cd ~/
+
 yum install -y bzr
 bzr branch lp:~percona-dev/perconatools/tpcc-mysql
 yum install -y gnuplot
@@ -16,7 +18,7 @@ yum install -y openssl-devel
 cd tpcc-mysql/src; make
 
 yum install -y wget
-cd /tmp; wget https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm; yum install -y epel-release-7-2.noarch.rpm
+cd /tmp; wget https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm; yum install -y epel-release-7-2.noarch.rpm; cd ~/
 yum install -y python-pip
 yum install -y python-devel
 pip install twisted
