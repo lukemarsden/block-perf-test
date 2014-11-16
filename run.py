@@ -72,17 +72,17 @@ def inject():
         d = utils.getProcessOutput("mysqladmin",
             ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hostPort,)).split(" "), errortoo=True)
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput("sh", ["-c",
+        d.addCallback(lambda ignored: utils.getProcessOutput("bash", ["-c",
             "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hostPort,)], errortoo=True))
         d.addCallback(printIt)
-        d.addCallback(lambda ignored: utils.getProcessOutput("sh", ["-c",
+        d.addCallback(lambda ignored: utils.getProcessOutput("bash", ["-c",
             "-h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hostPort,)], errortoo=True))
         d.addCallback(printIt)
         d.addCallback(lambda ignored: utils.getProcessOutput('/root/tpcc-mysql/tpcc_load',
             ('127.0.0.1:%d tpcc1000 root "" %d' % (hostPort, WAREHOUSES)).split(" "), errortoo=True))
         d.addCallback(printIt)
         d.addErrback(log.err, 'failed while creating database %d' % (i,))
-        dlist.add(d)
+        dlist.append(d)
     return defer.gatherResults(dlist)
 
 def benchmark():
@@ -91,7 +91,7 @@ def benchmark():
         d = utils.getProcessOutput('/root/tpcc-mysql/tpcc_start',
                 ('-h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l60' % (hostPort, WAREHOUSES)).split(" "), errortoo=True)
         d.addCallback(printIt)
-        dlist.add(d)
+        dlist.append(d)
     return defer.gatherResults(dlist)
 
 def main():
