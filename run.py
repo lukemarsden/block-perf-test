@@ -92,6 +92,7 @@ def main():
     d.addCallback(lambda ignored: benchmark())
     d.addCallback(printIt)
     d.addErrback(log.err, 'failed while running entire benchmark')
+    d.addBoth(lambda ignored: reactor.stop())
     return d
 
 reactor.callWhenRunning(main)
