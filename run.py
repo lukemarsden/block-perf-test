@@ -42,12 +42,12 @@ if DO_LOAD_STEP:
         hostPort = 4000 + i
         print 'allocating hostPort', hostPort
         os.system("rm -rf %s/*" % (path,))
-        cmd = (("""docker run -v %s:/var/lib/mysql dockerfile/percona sh -c """
+        cmd = (("""docker run -v %s:/var/lib/mysql percona sh -c """
                 """'mysql_install_db && mysqld_safe & mysqladmin --silent --wait=30 ping || exit 1 &&"""
                 """ mysql -e "GRANT ALL PRIVILEGES ON *.* TO \\\"root\\\"@\\\"%%\\\" WITH GRANT OPTION;"'""") % (path,))
         print 'running', cmd
         os.system(cmd)
-        os.system("docker run -d -v %s:/var/lib/mysql -v /root/block-perf-test/conf:/etc/mysql --publish=%d:3306 --name=mysql-%d-%s dockerfile/percona" % (path, hostPort, i, x))
+        os.system("docker run -d -v %s:/var/lib/mysql -v /home/ec2-user/block-perf-test/conf:/etc/mysql --publish=%d:3306 --name=mysql-%d-%s percona" % (path, hostPort, i, x))
 
 def printIt(result):
     print result
@@ -68,13 +68,13 @@ def inject():
             ("-h localhost -P %d --protocol=tcp create tpcc1000" % (hp,)).split(" ")), hp=hostPort)
         d.addCallback(printIt)
         d.addCallback(lambda ignored, hp: run("bash", ["-c",
-            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/create_table.sql" % (hp,)]), hp=hostPort)
+            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /home/ec2-user/tpcc-mysql/create_table.sql" % (hp,)]), hp=hostPort)
         d.addCallback(printIt)
         d.addCallback(lambda ignored, hp: run("bash", ["-c",
-            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /root/tpcc-mysql/add_fkey_idx.sql" % (hp,)]), hp=hostPort)
+            "mysql -h localhost -P %d --protocol=tcp tpcc1000 < /home/ec2-user/tpcc-mysql/add_fkey_idx.sql" % (hp,)]), hp=hostPort)
         d.addCallback(printIt)
         if DO_LOAD_STEP:
-            d.addCallback(lambda ignored, hp: run('/root/tpcc-mysql/tpcc_load',
+            d.addCallback(lambda ignored, hp: run('/home/ec2-user/tpcc-mysql/tpcc_load',
                 ["127.0.0.1:%d" % (hp,), "tpcc1000", "root", "", "%d" % (WAREHOUSES,)]), hp=hostPort)
             d.addCallback(printIt)
         d.addErrback(log.err, 'failed while creating database %d' % (i,))
@@ -84,7 +84,7 @@ def inject():
 def writeIt(result, hostPort):
     print result
     print "^ saving for", hostPort
-    f = open("/root/results-twisted-%d.log" % (hostPort,), "w")
+    f = open("/home/ec2-user/results-twisted-%d.log" % (hostPort,), "w")
     f.write(result)
     f.close()
 
@@ -93,8 +93,8 @@ def benchmark():
     for i in concurrent:
         hostPort = 4000 + i
         d = run("bash", ["-c",
-            ('/root/tpcc-mysql/tpcc_start -h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l%d'
-             ' > /root/results-%d-%d-%d-%d.log')
+            ('/home/ec2-user/tpcc-mysql/tpcc_start -h127.0.0.1 -P%d -dtpcc1000 -uroot -w%d -c32 -r10 -l%d'
+             ' > /home/ec2-user/results-%d-%d-%d-%d.log')
             % (hostPort, WAREHOUSES, TEST_TIME,
                CONCURRENCY, WAREHOUSES, TEST_TIME, hostPort)])
         d.addCallback(writeIt, hostPort=hostPort)
